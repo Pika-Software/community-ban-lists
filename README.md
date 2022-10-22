@@ -1,4 +1,4 @@
-# Community Ban Lists
+# Community Ban Lists - Core
  Garry's Mod global ban system based on public lists.
 
 ## How to create your first ban list
