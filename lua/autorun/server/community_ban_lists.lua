@@ -21,6 +21,7 @@ do
                 -- Player Info
                 ['nickname'] = nickname,
                 ['steamid64'] = steamID64,
+                ['steamid'] = util_SteamIDFrom64( steamID64 ),
                 ['ip'] = ip,
 
                 -- Server Info
@@ -30,7 +31,7 @@ do
             }
 
             if not silent then
-                community_bans_Log( 'Player \'' .. nickname .. '\' (' .. util_SteamIDFrom64( steamID64 ) .. ') blocked in \'' .. listName .. '\'.' )
+                community_bans_Log( 'Player \'' .. nickname .. '\' (' .. info.steamid .. ') blocked in \'' .. listName .. '\'.' )
             end
 
             return false, string_gsub( reason, '{(%w)}', function( str )
