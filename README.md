@@ -18,4 +18,4 @@
      my_awesome_support@email.com
  ]]
 ```
-- All extra reason tags: {nickname}, {steamid64}, {ip}, {listname}, {serverip}, {servername}
+- All extra reason tags: {nickname}, {steamid64}, {ip}, {listname}, {serverip}, {servername}, {steamid}
