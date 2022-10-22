@@ -2,9 +2,9 @@
  Garry's Mod global ban system based on public lists.
 
 ## How to create your first ban list
-- Install [Community Ban Lists](https://github.com/Pika-Software/gmod_community_ban_lists)
-- Create empty folder in Garry's Mod/garrysmod/addons
-- In this folder create file by path /lua/community_bans/lists/{your_ban_list_short_name}.lua
+- Install this addon from [Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2878187032) or [GitHub](https://github.com/Pika-Software/gmod_community_ban_lists)
+- Create empty folder in **Garry's Mod/garrysmod/addons**
+- In this folder create file by path **/lua/community_bans/lists/{your_ban_list_short_name}.lua**
 - In this file write your settings, example
 ```lua
  Name = 'My Awesome Ban List'
