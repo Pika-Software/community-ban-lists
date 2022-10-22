@@ -1,7 +1,6 @@
 if game.SinglePlayer() or (game.MaxPlayers() < 2) then return end
 include( 'community_bans/core.lua' )
 
--- Load local ban lists
 community_bans.InstallLocal( 'community_bans/lists/' )
 
 hook.Add('CheckPassword', 'Community Ban Lists', function( steamID64, ip, _, __, nickname )
