@@ -6,7 +6,6 @@ community_bans.InstallLocal( 'community_bans/lists/' )
 hook.Add('CheckPassword', 'Community Ban Lists', function( steamID64, ip, _, __, nickname )
     local banned, reason, silent, listName = community_bans.CheckSteamID64( steamID64 )
     if (banned) then
-
         local info = {
             -- Player Info
             ['nickname'] = nickname,
