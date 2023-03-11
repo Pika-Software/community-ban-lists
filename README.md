@@ -9,7 +9,7 @@
 ```lua
  Name = 'My Awesome Ban List'
  Source = 'https://your-host.com/my_awesome_ban_list.txt'
- Silent = false
+ ReasonSeparator = ' - '
  Reason = [[
      Hello {nickname},
      your account has been blocked on this server,
