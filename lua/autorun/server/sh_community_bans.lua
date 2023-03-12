@@ -23,8 +23,9 @@ hook.Add( 'CheckPassword', 'Community Ban Lists', function( sid64, ip, _, __, ni
     local info = {
         -- Player Info
         ['steamid'] = util_SteamIDFrom64( sid64 ),
-        ['steamid64'] = sid64,
+        ['reason'] = result.Reason,
         ['nickname'] = nickname,
+        ['steamid64'] = sid64,
         ['ip'] = ip,
 
         -- Server Info
@@ -33,7 +34,7 @@ hook.Add( 'CheckPassword', 'Community Ban Lists', function( sid64, ip, _, __, ni
         ['servername'] = GetHostName()
     }
 
-    return false, string.gsub( result.Reason, '{(%w)}', function( str )
+    return false, string.gsub( result.Message, '{(%w)}', function( str )
         local value = info[ string.lower( str ) ]
         if not value then return '{' .. str .. '}' end
         return value

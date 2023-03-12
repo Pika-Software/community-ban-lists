@@ -45,8 +45,9 @@ do
 
             return {
                 ['Banned'] = true,
-                ['Reason'] = Either( isstring( result ), result, tbl.Reason ),
-                ['ListName'] = tbl.Name
+                ['ListName'] = tbl.Name,
+                ['Message'] = tbl.Message,
+                ['Reason'] = Either( isstring( result ), result, 'unknown' )
             }
         end
 
@@ -81,7 +82,7 @@ do
 
     local util_SteamIDTo64 = util.SteamIDTo64
 
-    function Install( name, source, reason, reasonSeparator )
+    function Install( name, source, message, reasonSeparator )
         if not isstring( source ) then return end
 
         Download( source, function( body )
@@ -89,7 +90,7 @@ do
             local tbl = {
                 ['Source'] = source,
                 ['SteamIDs'] = {},
-                ['Reason'] = reason,
+                ['Message'] = message,
                 ['Name'] = string.Trim( name or source ),
                 ['ReasonSeparator'] = reasonSeparator or ' - '
             }
@@ -152,7 +153,7 @@ do
             banList[ string.lower( key ) ] = value
         end
 
-        Install( banList.name, banList.source, banList.reason, banList.reasonseparator )
+        Install( banList.name, banList.source, banList.message or banList.reason, banList.reasonseparator )
         return true
     end
 
