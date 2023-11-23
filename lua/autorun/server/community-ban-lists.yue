@@ -153,7 +153,7 @@ hook.Add "CheckPassword", AddonName, ( player_steamid64, player_ip, _, __, playe
     return false, list\GetReason( player_ip, player_steamid64, player_nick )
 
 concommand.Add "cbl_reload", =>
-    unless @IsAdmin!
+    if IsValid( @ ) and not @IsSuperAdmin!
         return
 
     table.Empty( Bans )
