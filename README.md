@@ -1,30 +1,43 @@
-# Community Ban Lists - Core
- Garry's Mod global ban system based on public lists.
+# Community Ban Lists
+Garry's Mod global ban system based on public lists.
 
-## How to create your first ban list
-- Install this addon from [Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=2878187032) or [GitHub](https://github.com/Pika-Software/gmod_community_ban_lists)
-- Create empty folder in **Garry's Mod/garrysmod/addons**
-- In this folder create file by path **/lua/community_bans/lists/{your_ban_list_short_name}.lua**
-- In this file write your settings, example
-```lua
- Name = 'My Awesome Ban List'
- Source = 'https://your-host.com/my_awesome_ban_list.txt'
- ReasonSeparator = ' - '
- Message = [[
-     Hello {nickname},
-     your account has been blocked on this server,
-     please contact with us to know your block reason.
-    
-     my_awesome_support@email.com
- ]]
+### List config
+```
+<config>
+    <title>My List</title>
+    <message>
+        Your SteamID is on the community ban list used on this server. Contact the server owner for more information.
+    </message>
+</config>
+
+... banned steamids
 ```
 
-### Disconnect message tags:
-- **{nickname}** - Steam nickname of the blocked player
-- **{steamid64}** - SteamID64 of the blocked player
-- **{ip}** - IP address of the blocked player
-- **{listname}** - Ban list name
-- **{serverip}** - Server address
-- **{servername}** - Server name
-- **{steamid}** - SteamID of the blocked player
-- **{reason}** - Reason why this player is blocked
+### Disconnect message tags
+#### Usage example
+```
+<config>
+    <title>My List</title>
+    <message>
+        Hello {{player_nick}}!
+    </message>
+</config>
+
+... banned steamids
+```
+
+#### Ban List
+- `list_name` - Ban list name
+- `list_length` - Banned player count
+
+#### Server
+- `server_address` - Server address
+- `server_name` - Server name
+- `server_map` - Current server map
+
+#### Banned Player
+- `player_reason` - Banned player ban reason
+- `player_steamid` - Banned player steamid
+- `player_steamid64` - Banned player steamid64
+- `player_nick` - Banned player nickname
+- `player_ip` - Banned player ip address
