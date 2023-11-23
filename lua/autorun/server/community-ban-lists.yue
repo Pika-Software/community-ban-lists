@@ -1,0 +1,158 @@
+if game.SinglePlayer! or game.MaxPlayers! < 2
+    return
+
+:lower, :gsub, :format, :find, :sub, :match, :Trim, :gmatch = string
+:SteamIDFrom64, :SteamIDTo64 = util
+:AsyncRead, :Exists = file
+:Fetch = http
+
+isstring = isstring
+istable = istable
+SysTime = SysTime
+print = print
+
+AddonName = "Community Ban List"
+Bans, URLs = {}, {}
+
+FileName = gsub( lower( AddonName ), "[%s%p]+", "_" ) .. ".json"
+if Exists( FileName, "DATA" )
+    json = file.Read( FileName, "DATA" )
+    if isstring( json )
+        data = util.JSONToTable( json )
+        if istable( data )
+            table.Merge( URLs, data )
+else
+    file.Write( FileName, "[]" )
+
+class List
+    new: ( url ) =>
+        @Message = "Your SteamID is on the community ban list used on this server. Contact the server owner for more information."
+        @Name = gsub( url, "%w+://", "" )
+        @StartTime = SysTime!
+        @Reasons = {}
+        @Length = 0
+
+        if isstring( url )
+            @Fetch( url )
+        @Perform!
+
+    GetReasonFormatter: ( data ) =>
+        return ( str ) ->
+            value = data[ lower( str ) ]
+            if value
+                return value
+            return "{{" .. str .. "}}"
+
+    GetReason: ( player_ip, player_steamid64, player_nick ) =>
+        return gsub( @Message, "{{([%w_]+)}}", @GetReasonFormatter( {
+            list_name: @Name
+            list_length: @Length
+
+            server_address: game.GetIPAddress!
+            server_name: GetHostName!
+            server_map: game.GetMap!
+
+            player_reason: @Reasons[ player_steamid64 ] or "unknown"
+            player_steamid: SteamIDFrom64( player_steamid64 )
+            :player_steamid64
+            :player_nick
+            :player_ip
+        } ) )
+
+    Fetch: ( url ) =>
+        filePath = match( url, "file://(.+)" )
+        if filePath and Exists( filePath, "GAME" )
+            return AsyncRead( filePath, "GAME", ( _, __, code, data ) ->
+                if code ~= 0
+                    ErrorNoHaltWithStack( format "AsyncRead from '%s' failed with code: %d", filePath, code )
+                    return
+
+                @Parse( data )
+            )
+
+        Fetch( url, ( data, _, __, code ) ->
+            if code ~= 200
+                ErrorNoHaltWithStack( format "GET request to '%s' failed with code: %d", url, code )
+                return
+
+            @Parse( data )
+        ( msg ) ->
+            ErrorNoHaltWithStack( format "GET request to '%s' failed with error: %s", url, msg )
+        )
+
+    IsBanned: ( sid ) =>
+        return Bans[ sid ] ~= nil
+
+    AddSteamID: ( sid, reason ) =>
+        if find( sid, "^STEAM_%d+:%d+:%d+$" ) ~= nil
+            sid = SteamIDTo64( sid )
+
+        unless Bans[ sid ]
+            Bans[ sid ] = @
+            @Length += 1
+
+        if reason
+            @Reasons[ sid ] = reason
+
+    RemoveSteamID: ( sid ) =>
+        if find( sid, "^STEAM_%d+:%d+:%d+$" ) ~= nil
+            sid = SteamIDTo64( sid )
+
+        if Bans[ sid ]
+            @Reasons[ sid ] = nil
+            Bans[ sid ] = nil
+            @Length -= 1
+
+    Perform: =>
+        for ply in *player.GetHumans!
+            player_steamid64 = ply\SteamID64!
+            if @IsBanned( player_steamid64 )
+                ply\Kick( @GetReason( ply\IPAddress!, player_steamid64, ply\Nick! ) )
+
+    Parse: ( data ) =>
+        data = gsub( data, "\r", "" )
+        startPos, endPos, config = find( data, "<config>(.+)</config>" )
+        if config
+            data = sub( data, 1, startPos - 1 ) .. sub( data, endPos + 1 )
+            @Name = match( config, "<title>(.+)</title>" )
+            @Message = Trim( gsub( gsub( match( config, "<message>(.+)</message>" ), "\n[ \t]+", "\n" ), "\n$", "" ) )
+
+        for line in gmatch( data, "(.-)\n" )
+            if #line < 8
+                continue
+
+            line = gsub( line, "^%s*banid%s+%d+%s+", "" )
+            startPos, endPos, sid = find( line, "([%w_:]+)" )
+            unless sid
+                continue
+
+            line = sub( line, endPos + 1 )
+            reason = match( line, "^%s+%p+%s+(.+)%s*$" )
+            unless reason
+                reason = match( line, "^%s(.+)%s*$" )
+
+            @AddSteamID( sid, reason )
+        print format( "[%s/%s] Added %d banned SteamID's, took %f seconds.", AddonName, @Name, @Length, SysTime! - @StartTime )
+
+LoadLists = ->
+    for url in *URLs
+        List( url )
+timer.Simple 0, LoadLists
+
+hook_Run = hook.Run
+hook.Add "CheckPassword", AddonName, ( player_steamid64, player_ip, _, __, player_nick ) ->
+    list = Bans[ player_steamid64 ]
+    unless list
+        return
+
+    if hook_Run( "CBL:Connect", list, player_steamid64, player_ip, player_nick ) == true
+        return
+
+    return false, list\GetReason( player_ip, player_steamid64, player_nick )
+
+concommand.Add "cbl_reload", =>
+    unless @IsAdmin!
+        return
+
+    table.Empty( Bans )
+    LoadLists!
