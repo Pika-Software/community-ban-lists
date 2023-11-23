@@ -4,7 +4,7 @@ Garry's Mod global ban system based on public lists.
 ### List config
 ```
 <config>
-    <title>My List</title>
+    <name>My List</name>
     <message>
         Your SteamID is on the community ban list used on this server. Contact the server owner for more information.
     </message>
@@ -17,7 +17,7 @@ Garry's Mod global ban system based on public lists.
 #### Usage example
 ```
 <config>
-    <title>My List</title>
+    <name>My List</name>
     <message>
         Hello {{player_nick}}!
     </message>
