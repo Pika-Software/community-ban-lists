@@ -115,8 +115,8 @@ class List
         startPos, endPos, config = find( data, "<config>(.+)</config>" )
         if config
             data = sub( data, 1, startPos - 1 ) .. sub( data, endPos + 1 )
-            @Name = match( config, "<name>(.+)</name>" )
-            @Message = Trim( gsub( gsub( match( config, "<message>(.+)</message>" ), "\n[ \t]+", "\n" ), "\n$", "" ) )
+            @Name = match( config, "<name>(.+)</name>" ) or @Name
+            @Message = Trim( gsub( gsub( match( config, "<message>(.+)</message>" ), "\n[ \t]+", "\n" ), "\n$", "" ) ) or @Message
 
         for line in gmatch( data, "(.-)\n" )
             if #line < 8
