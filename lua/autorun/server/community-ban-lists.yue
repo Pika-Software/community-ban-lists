@@ -14,15 +14,16 @@ print = print
 AddonName = "Community Ban Lists"
 Bans, URLs = {}, {}
 
-FileName = gsub( lower( AddonName ), "[%s%p]+", "_" ) .. ".json"
-if Exists( FileName, "DATA" )
-    json = file.Read( FileName, "DATA" )
-    if isstring( json )
-        data = util.JSONToTable( json )
-        if istable( data )
-            table.Merge( URLs, data )
-else
-    file.Write( FileName, "[]" )
+LoadConfig = ->
+    FileName = gsub( lower( AddonName ), "[%s%p]+", "_" ) .. ".json"
+    if Exists( FileName, "DATA" )
+        json = file.Read( FileName, "DATA" )
+        if isstring( json )
+            data = util.JSONToTable( json )
+            if istable( data )
+                table.Merge( URLs, data )
+    else
+        file.Write( FileName, "[]" )
 
 class List
     new: ( url ) =>
@@ -138,6 +139,7 @@ LoadLists = ->
     for url in *URLs
         List( url )
 timer.Simple 0, LoadLists
+LoadConfig!
 
 hook_Run = hook.Run
 hook.Add "CheckPassword", AddonName, ( player_steamid64, player_ip, _, __, player_nick ) ->
@@ -155,4 +157,5 @@ concommand.Add "cbl_reload", =>
         return
 
     table.Empty( Bans )
+    LoadConfig!
     LoadLists!
