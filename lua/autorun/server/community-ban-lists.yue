@@ -11,7 +11,7 @@ istable = istable
 SysTime = SysTime
 print = print
 
-AddonName = "Community Ban List"
+AddonName = "Community Ban Lists"
 Bans, URLs = {}, {}
 
 FileName = gsub( lower( AddonName ), "[%s%p]+", "_" ) .. ".json"
