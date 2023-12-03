@@ -1,6 +1,11 @@
 # Community Ban Lists
 Garry's Mod global ban system based on public lists.
 
+### Usage
+Simply add your banlist urls to the json list in the `data/community_ban_lists.json` file.
+#### Example:
+![image](https://github.com/Pika-Software/community-ban-lists/assets/44779902/c66b1b21-27a5-4bf4-983d-09fbb7266bde)
+
 ### List config
 ```
 <config>
