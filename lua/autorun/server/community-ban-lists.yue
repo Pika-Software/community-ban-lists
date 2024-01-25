@@ -11,17 +11,18 @@ istable = istable
 SysTime = SysTime
 print = print
 
-AddonName = "Community Ban Lists"
-Bans, URLs = {}, {}
+addonName = "Community Ban Lists"
+bans, urls = {}, {}
 
-LoadConfig = ->
-    FileName = gsub( lower( AddonName ), "[%s%p]+", "_" ) .. ".json"
+loadConfig = ->
+    FileName = gsub( lower( addonName ), "[%s%p]+", "_" ) .. ".json"
     if Exists( FileName, "DATA" )
         json = file.Read( FileName, "DATA" )
         if isstring( json )
             data = util.JSONToTable( json )
             if istable( data )
-                table.Merge( URLs, data )
+                table.Merge( urls, data )
+
     else
         file.Write( FileName, "[]" )
 
@@ -35,14 +36,10 @@ class List
 
         if isstring( url )
             @Fetch( url )
-        @Perform!
 
     GetReasonFormatter: ( data ) =>
         return ( str ) ->
-            value = data[ lower( str ) ]
-            if value
-                return value
-            return "{{" .. str .. "}}"
+            return data[ lower( str ) ] or "{{" .. str .. "}}"
 
     GetReason: ( player_ip, player_steamid64, player_nick ) =>
         return gsub( @Message, "{{([%w_]+)}}", @GetReasonFormatter( {
@@ -82,14 +79,14 @@ class List
         )
 
     IsBanned: ( sid ) =>
-        return Bans[ sid ] ~= nil
+        return bans[ sid ] ~= nil
 
     AddSteamID: ( sid, reason ) =>
         if find( sid, "^STEAM_%d+:%d+:%d+$" ) ~= nil
             sid = SteamIDTo64( sid )
 
-        unless Bans[ sid ]
-            Bans[ sid ] = @
+        if bans[ sid ] == nil
+            bans[ sid ] = @
             @Length += 1
 
         if reason
@@ -99,9 +96,9 @@ class List
         if find( sid, "^STEAM_%d+:%d+:%d+$" ) ~= nil
             sid = SteamIDTo64( sid )
 
-        if Bans[ sid ]
+        if bans[ sid ] ~= nil
             @Reasons[ sid ] = nil
-            Bans[ sid ] = nil
+            bans[ sid ] = nil
             @Length -= 1
 
     Perform: =>
@@ -113,7 +110,7 @@ class List
     Parse: ( data ) =>
         data = gsub( data, "\r", "" )
         startPos, endPos, config = find( data, "<config>(.+)</config>" )
-        if config
+        if config ~= nil
             data = sub( data, 1, startPos - 1 ) .. sub( data, endPos + 1 )
             @Name = match( config, "<name>(.+)</name>" ) or @Name
             @Message = Trim( gsub( gsub( match( config, "<message>(.+)</message>" ), "\n[ \t]+", "\n" ), "\n$", "" ) ) or @Message
@@ -124,30 +121,33 @@ class List
 
             line = gsub( line, "^%s*banid%s+%d+%s+", "" )
             startPos, endPos, sid = find( line, "([%w_:]+)" )
-            unless sid
+            unless sid ~= nil
                 continue
 
             line = sub( line, endPos + 1 )
             reason = match( line, "^%s+%p+%s+(.+)%s*$" )
-            unless reason
+            unless reason ~= nil
                 reason = match( line, "^%s(.+)%s*$" )
 
             @AddSteamID( sid, reason )
-        print format( "[%s/%s] Added %d banned SteamID's, took %f seconds.", AddonName, @Name, @Length, SysTime! - @StartTime )
 
-LoadLists = ->
-    for url in *URLs
+        print format( "[%s/%s] Added %d banned SteamID's, took %f seconds.", addonName, @Name, @Length, SysTime! - @StartTime )
+        @Perform!
+
+loadLists = ->
+    for url in *urls
         List( url )
-timer.Simple 0, LoadLists
-LoadConfig!
 
-hook_Run = hook.Run
-hook.Add "CheckPassword", AddonName, ( player_steamid64, player_ip, _, __, player_nick ) ->
-    list = Bans[ player_steamid64 ]
+timer.Simple 0, loadLists
+loadConfig!
+
+:Run = hook
+hook.Add "CheckPassword", addonName, ( player_steamid64, player_ip, _, __, player_nick ) ->
+    list = bans[ player_steamid64 ]
     unless list
         return
 
-    if hook_Run( "CBL:Connect", list, player_steamid64, player_ip, player_nick ) == true
+    if Run( "CBL:Connect", list, player_steamid64, player_ip, player_nick ) ~= false
         return
 
     return false, list\GetReason( player_ip, player_steamid64, player_nick )
@@ -156,6 +156,6 @@ concommand.Add "cbl_reload", =>
     if IsValid( @ ) and not @IsSuperAdmin!
         return
 
-    table.Empty( Bans )
-    LoadConfig!
-    LoadLists!
+    table.Empty( bans )
+    loadConfig!
+    loadLists!
