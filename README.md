@@ -2,7 +2,7 @@
 Garry's Mod global ban system based on public lists.
 
 ## Where is Lua code?
-Written in [Yuescript](https://github.com/pigpigyyy/Yuescript), compiled Lua code can be found in [releases](https://github.com/Pika-Software/community-ban-lists/releases), or you can compile it yourself using compiled [Yuescript Compiler](https://github.com/pigpigyyy/Yuescript/releases/latest).
+Written in [Yuescript](https://github.com/pigpigyyy/Yuescript), compiled Lua code can be found in [releases](https://github.com/Pika-Software/community-ban-lists/releases) and [lua branch](https://github.com/Pika-Software/community-ban-lists/tree/lua), or you can compile it yourself using compiled [Yuescript Compiler](https://github.com/pigpigyyy/Yuescript/releases/latest).
 
 ### Usage
 Simply add your banlist urls to the json list in the `data/community_ban_lists.json` file.
