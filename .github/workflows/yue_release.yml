@@ -19,7 +19,6 @@ jobs:
         run: |
           rm .gitignore
           rm -rf .github
-          rm todo.md
 
       - name: Create VERSION file
         run: echo -e ${{ github.ref_name }} > VERSION
