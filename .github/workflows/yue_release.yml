@@ -15,35 +15,26 @@ jobs:
       - name: Change directory
         run: cd $GITHUB_WORKSPACE
 
-      # - name: Update apt
-      #   run: sudo apt-get update -y
-
-      # - name: Install LuaRocks
-      #   run: sudo apt-get install -y luarocks
-
-      # - name: Install Yuescript
-      #   run: sudo luarocks install yuescript
-
-      - name: Build Lua
-        run: ./.github/yue ./
-
-      - name: Remove yue
-        run: find . -type f -name '*.yue' -delete
-
-      - name: Remove github dir
-        run: rm -rf .github
-
-      - name: Remove .gitignore
-        run: rm -f .gitignore
-
-      - name: Remove .gitattributes
-        run: rm -f .gitattributes
-
-      - name: Remove todo.md
-        run: rm -f todo.md
+      - name: Remove unused files and folders
+        run: |
+          rm .gitignore
+          rm -rf .github
+          rm todo.md
 
       - name: Create VERSION file
-        run: versionStr=${{ github.ref }};echo -e v${versionStr#*v} > VERSION
+        run: echo -e ${{ github.ref_name }} > VERSION
+
+      - name: Download Yuescript and unzip yue
+        run: |
+          wget https://github.com/pigpigyyy/Yuescript/releases/download/v0.21.8/yue-linux-x86_64.zip
+          unzip yue-linux-x86_64.zip
+          rm yue-linux-x86_64.zip
+
+      - name: Build .lua and remove .yue
+        run: |
+          ./yue ./
+          rm yue
+          find . -type f -name '*.yue' -delete
 
       - name: Push to lua branch
         run: |
@@ -66,10 +57,10 @@ jobs:
         run: zip -r9 ${{ github.event.repository.name }}.zip .
 
       - name: Publish Release
-        id: create_release
         uses: softprops/action-gh-release@v1
+        id: create_release
         with:
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
