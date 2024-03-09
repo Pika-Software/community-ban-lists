@@ -5,6 +5,7 @@ if game.SinglePlayer! or game.MaxPlayers! < 2
 :SteamIDFrom64, :SteamIDTo64 = util
 :AsyncRead, :Exists = file
 :Fetch = http
+:Run = hook
 
 isstring = isstring
 istable = istable
@@ -15,16 +16,16 @@ addonName = "Community Ban Lists"
 bans, urls = {}, {}
 
 loadConfig = ->
-    FileName = gsub( lower( addonName ), "[%s%p]+", "_" ) .. ".json"
-    if Exists( FileName, "DATA" )
-        json = file.Read( FileName, "DATA" )
+    fileName = gsub( lower( addonName ), "[%s%p]+", "_" ) .. ".json"
+    if Exists( fileName, "DATA" )
+        json = file.Read( fileName, "DATA" )
         if isstring( json )
             data = util.JSONToTable( json )
             if istable( data )
                 table.Merge( urls, data )
 
     else
-        file.Write( FileName, "[]" )
+        file.Write( fileName, "[]" )
 
 class List
     new: ( url ) =>
@@ -134,14 +135,18 @@ class List
         print format( "[%s/%s] Added %d banned SteamID's, took %f seconds.", addonName, @Name, @Length, SysTime! - @StartTime )
         @Perform!
 
+global CommunityBanList = List
+
 loadLists = ->
     for url in *urls
         List( url )
 
+    Run( "CBL:Reload" )
+    return
+
 timer.Simple 0, loadLists
 loadConfig!
 
-:Run = hook
 hook.Add "CheckPassword", addonName, ( player_steamid64, player_ip, _, __, player_nick ) ->
     list = bans[ player_steamid64 ]
     unless list
