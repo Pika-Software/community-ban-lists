@@ -1,4 +1,4 @@
-name: Create Yuescript Release
+name: Create Release
 
 on:
   push:
@@ -19,32 +19,10 @@ jobs:
         run: |
           rm .gitignore
           rm -rf .github
+          rm -rf .git
 
       - name: Create VERSION file
         run: echo -e ${{ github.ref_name }} > VERSION
-
-      - name: Download Yuescript and unzip yue
-        run: |
-          wget https://github.com/pigpigyyy/Yuescript/releases/download/v0.21.8/yue-linux-x86_64.zip
-          unzip yue-linux-x86_64.zip
-          rm yue-linux-x86_64.zip
-
-      - name: Build .lua and remove .yue
-        run: |
-          ./yue ./
-          rm yue
-          find . -type f -name '*.yue' -delete
-
-      - name: Push to lua branch
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "Release build: $(cat VERSION)"
-          git push -f origin HEAD:lua
-
-      - name: Remove .git dir
-        run: rm -rf .git
 
       - name: Create subdirectory
         run: mkdir ${{ github.event.repository.name }}
