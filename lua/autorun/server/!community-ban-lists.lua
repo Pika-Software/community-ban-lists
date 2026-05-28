@@ -282,54 +282,69 @@ end
 sql.Query( "CREATE TABLE IF NOT EXISTS community_ban_lists ( url TEXT PRIMARY KEY )" )
 
 ---@param url string
+---@param no_warns? boolean
 ---@return boolean
-local function sql_insert( url )
+local function sql_insert( url, no_warns )
     if not isURL( url ) then
         error( string_format( "attempt to insert invalid URL '%s'", url ), 2 )
     end
 
-    if sql.Query( "SELECT * FROM community_ban_lists WHERE url = '" .. url .. "'" ) == nil then
+    local base64_str = util.Base64Encode( url, true )
+
+    if sql.Query( "SELECT * FROM community_ban_lists WHERE url = '" .. base64_str .. "'" ) ~= nil then
+        if not no_warns then
+            log_message( "warn", "URL '%s' is already in the database, skipping insert.", url )
+        end
+
         return false
     end
 
-    if sql.Query( "INSERT OR IGNORE INTO community_ban_lists ( url ) VALUES ( '" .. url .. "' )" ) == false then
-        log_message( "error", "Failed to insert URL '%s' into the database, %s.", url, sql.LastError() )
+    if sql.Query( "INSERT OR IGNORE INTO community_ban_lists ( url ) VALUES ( '" .. base64_str .. "' )" ) == false then
+        log_message( "error", "Failed to insert URL '%s' into the database, %s.", base64_str, sql.LastError() or "unknown error" )
         return false
     end
 
-    log_message( "info", "Successfully inserted URL '%s' into the database.", url )
+    log_message( "info", "Successfully inserted URL '%s' into the database.", base64_str )
     return true
 end
 
 ---@param url string
+---@param no_warns? boolean
 ---@return boolean
-local function sql_delete( url )
+local function sql_delete( url, no_warns )
     if not isURL( url ) then
         error( string_format( "attempt to remove invalid URL '%s'", url ), 2 )
     end
 
-    if sql.Query( "SELECT * FROM community_ban_lists WHERE url = '" .. url .. "'" ) == nil then
+    local base64_str = util.Base64Encode( url, true )
+
+    if sql.Query( "SELECT * FROM community_ban_lists WHERE url = '" .. base64_str .. "'" ) == nil then
+        if not no_warns then
+            log_message( "warn", "URL '%s' is not in the database, skipping delete.", url )
+        end
+
         return false
     end
 
-    if sql.Query( "DELETE FROM community_ban_lists WHERE url = '" .. url .. "'" ) == false then
-        log_message( "error", "Failed to remove URL '%s' from the database, %s.", url, sql.LastError() )
+    if sql.Query( "DELETE FROM community_ban_lists WHERE url = '" .. base64_str .. "'" ) == false then
+        log_message( "error", "Failed to remove URL '%s' from the database, %s.", base64_str, sql.LastError() )
         return false
     end
 
-    log_message( "info", "Successfully removed URL '" .. url .. "' from the database." )
+    log_message( "info", "Successfully removed URL '" .. base64_str .. "' from the database." )
     return true
 end
 
 ---@class CBanList.Source
 ---@field url string
 
----@type CBanList.Source[]
+---@type string[]
 local sources = {}
 
 ---@param file_path string
+---@param no_warns boolean
 ---@return boolean
-local function update_lists_from_file( file_path )
+local function update_lists_from_file( file_path, no_warns )
     log_message( "info", "Updating ban lists from '%s'...", file_path )
 
     if not file.Exists( file_path, "GAME" ) then
@@ -359,14 +374,17 @@ local function update_lists_from_file( file_path )
 
     local data_len = #data
     if data_len == 0 then
-        -- log_message( "warn", "JSON array in file '%s' is empty, no data to merge.", file_path )
+        if not no_warns then
+            log_message( "warn", "JSON array in file '%s' is empty, no data to merge.", file_path )
+        end
+
         return false
     end
 
     for i = 1, data_len, 1 do
         local source_url = data[ i ]
         if isURL( source_url ) then
-            sql_insert( source_url )
+            sql_insert( source_url, false )
         else
             log_message( "warn", "Invalid URL '%s' found in '%s', skipping.", source_url, file_path )
         end
@@ -376,8 +394,8 @@ local function update_lists_from_file( file_path )
 end
 
 local function update_lists()
-    update_lists_from_file( "data_static/community_ban_lists.json" )
-    update_lists_from_file( "data/community_ban_lists.json" )
+    update_lists_from_file( "data_static/community_ban_lists.json", false )
+    update_lists_from_file( "data/community_ban_lists.json", false )
 
     log_message( "info", "Fetching ban lists from database..." )
 
@@ -387,12 +405,16 @@ local function update_lists()
         return false
     end
 
+    sources = {}
+
     if istable( result ) then
         ---@cast result CBanList.Source[]
-        sources = result
+
+        for i = 1, #result, 1 do
+            sources[ i ] = util.Base64Decode( result[ i ].url )
+        end
     else
         log_message( "warn", "No ban lists found in the database, using empty list." )
-        sources = {}
     end
 
     log_message( "info", "Initializing & clearing ban lists..." )
@@ -401,8 +423,7 @@ local function update_lists()
     table.Empty( banned )
 
     for i = 1, #sources, 1 do
-        local source = sources[ i ]
-        local source_url = source.url
+        local source_url = sources[ i ]
         ban_lists[ source_url ] = util.CommunityBanList( source_url )
     end
 
@@ -485,7 +506,7 @@ local commands = {
                 )
             end
 
-            if sql_insert( url ) then
+            if sql_insert( url, true ) then
                 return string_format(
                     "URL '%s' added to the ban list.",
                     url
@@ -510,7 +531,7 @@ local commands = {
                 )
             end
 
-            if sql_delete( url ) then
+            if sql_delete( url, true ) then
                 return string_format( "URL '%s' removed from the ban list.", url )
             else
                 return string_format( "Failed to remove URL '%s' from the ban list. %s.", url, sql.LastError() )
