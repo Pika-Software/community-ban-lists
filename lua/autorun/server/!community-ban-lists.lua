@@ -445,7 +445,7 @@ local access_to_integer = {
 ---@type CBanList.Command[]
 local commands = {
     {
-        name = "info",
+        name = "all",
         fn = function()
             local lists_info = {}
 
@@ -468,7 +468,7 @@ local commands = {
         access = "admin",
     },
     {
-        name = "clear",
+        name = "clr",
         fn = function()
             local count = table.Count( banned )
             if count == 0 then
@@ -485,7 +485,7 @@ local commands = {
         access = "superadmin",
     },
     {
-        name = "reload",
+        name = "rel",
         fn = function()
             update_lists()
 
@@ -540,7 +540,7 @@ local commands = {
         access = "superadmin",
     },
     {
-        name = "player",
+        name = "who",
         fn = function( steamid )
             local account_id = account_ids[ steamid ]
 
