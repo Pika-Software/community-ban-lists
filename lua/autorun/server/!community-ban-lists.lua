@@ -549,8 +549,6 @@ for i = 1, #commands, 1 do
     local exec_fn = data.fn
 
     concommand.Add( "cbl." .. data.name, function( pl, _, args )
-        local is_console = true
-
         if pl ~= nil and pl:IsValid() then
             local access_type
 
@@ -565,18 +563,15 @@ for i = 1, #commands, 1 do
             end
 
             if access_type < required_access then
-                pl:PrintMessage( HUD_PRINTCONSOLE, "[CBL] You do not have access to this command." )
+                pl:PrintMessage( 2, "[CBL] You do not have access to this command." )
                 return
             end
+
+            pl:PrintMessage( 2, "[CBL] " .. exec_fn( args[ 1 ] or "", args[ 2 ] or "" ) )
+            return
         end
 
-        local output_str = exec_fn( args[ 1 ] or "", args[ 2 ] or "" )
-
-        if is_console then
-            log_message( "info", output_str )
-        else
-            pl:PrintMessage( HUD_PRINTCONSOLE, "[CBL] " .. output_str )
-        end
+        log_message( "info", exec_fn( args[ 1 ] or "", args[ 2 ] or "" ) )
     end )
 end
 
