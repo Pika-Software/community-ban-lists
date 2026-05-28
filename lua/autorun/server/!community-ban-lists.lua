@@ -384,7 +384,7 @@ local function update_lists_from_file( file_path, no_warns )
     for i = 1, data_len, 1 do
         local source_url = data[ i ]
         if isURL( source_url ) then
-            sql_insert( source_url, false )
+            sql_insert( source_url, true )
         else
             log_message( "warn", "Invalid URL '%s' found in '%s', skipping.", source_url, file_path )
         end
