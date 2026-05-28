@@ -300,11 +300,11 @@ local function sql_insert( url, no_warns )
     end
 
     if sql.Query( "INSERT OR IGNORE INTO community_ban_lists ( url ) VALUES ( '" .. base64_str .. "' )" ) == false then
-        log_message( "error", "Failed to insert URL '%s' into the database, %s.", base64_str, sql.LastError() or "unknown error" )
+        log_message( "error", "Failed to insert URL '%s' into the database, %s.", url, sql.LastError() or "unknown error" )
         return false
     end
 
-    log_message( "info", "Successfully inserted URL '%s' into the database.", base64_str )
+    log_message( "info", "Successfully inserted URL '%s' into the database.", url )
     return true
 end
 
@@ -327,11 +327,11 @@ local function sql_delete( url, no_warns )
     end
 
     if sql.Query( "DELETE FROM community_ban_lists WHERE url = '" .. base64_str .. "'" ) == false then
-        log_message( "error", "Failed to remove URL '%s' from the database, %s.", base64_str, sql.LastError() )
+        log_message( "error", "Failed to remove URL '%s' from the database, %s.", url, sql.LastError() )
         return false
     end
 
-    log_message( "info", "Successfully removed URL '" .. base64_str .. "' from the database." )
+    log_message( "info", "Successfully removed URL '%s' from the database.", url )
     return true
 end
 
