@@ -571,7 +571,7 @@ for i = 1, #commands, 1 do
 
     concommand.Add( "cbl." .. data.name, function( pl, _, args )
         if pl ~= nil and pl:IsValid() then
-            local access_type
+            local access_type = 0
 
             if pl:IsListenServerHost() then
                 access_type = 3
@@ -579,8 +579,6 @@ for i = 1, #commands, 1 do
                 access_type = 2
             elseif pl:IsAdmin() then
                 access_type = 1
-            else
-                access_type = 0
             end
 
             if access_type < required_access then
