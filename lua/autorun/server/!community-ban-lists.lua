@@ -553,10 +553,9 @@ local commands = {
             end
 
             return string_format(
-                "Player '%s' banned in '%s' with reason: '%s'",
+                "Player '%s' was banned in '%s'.",
                 string_format( "U:1:%d", account_id ),
-                ban_list.Name,
-                ban_list:getReason( "0.0.0.0", account_id, "unknown" )
+                ban_list.Name
             )
         end,
         access = "admin",
