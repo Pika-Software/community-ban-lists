@@ -451,10 +451,11 @@ local commands = {
 
             for url, list in pairs( ban_lists ) do
                 lists_info[ #lists_info + 1 ] = string_format(
-                    "%d. '%s' [%d banned]",
+                    "%d. '%s' [%d banned] (%s)",
                     #lists_info + 1,
                     list.Name,
-                    list.Length
+                    list.Length,
+                    url
                 )
             end
 
