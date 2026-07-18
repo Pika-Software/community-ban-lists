@@ -11,6 +11,7 @@ local string_len = string.len
 
 local setmetatable = setmetatable
 local hook_Run = hook.Run
+local SysTime = SysTime
 
 local color_msg_time = { r = 100, g = 100, b = 100, a = 255 }
 local color_msg_title = { r = 150, g = 150, b = 250, a = 255 }
@@ -26,7 +27,7 @@ local type_to_color = {
 ---@param msg_text string
 ---@param ... any
 local function log_message( msg_type, msg_text, ... )
-    MsgC( color_msg_time, string_format( "%s.%03d ", os.date( "%H:%M:%S" ), (os.clock() % 1) * 1000 ), color_msg_title, addon_name .. "@", type_to_color[ msg_type ], msg_type, color_msg_text, ": ", string_format( msg_text, ... ), "\n" )
+    MsgC( color_msg_time, string_format( "%s.%03d ", os.date( "%H:%M:%S" ), (SysTime() % 1) * 1000 ), color_msg_title, addon_name .. "@", type_to_color[ msg_type ], msg_type, color_msg_text, ": ", string_format( msg_text, ... ), "\n" )
 end
 
 if game.SinglePlayer() or (game.MaxPlayers() < 2) then
@@ -207,7 +208,7 @@ function CBanList:parse( data )
         end
     end
 
-    log_message( "info", "Fetched %d banned users from '%s', took %0.3f seconds.", self.Length, self.Name, os.clock() - self.InitTime )
+    log_message( "info", "Fetched %d banned users from '%s', took %0.3f seconds.", self.Length, self.Name, CurTime() - self.InitTime )
     self:apply()
 end
 
@@ -266,7 +267,7 @@ function util.CommunityBanList( url )
 
     ---@type CBanList
     local object = {
-        InitTime = os.clock(),
+        InitTime = SysTime(),
         Name = string_gsub( url, "%w+://", "" ),
         Message = "Your SteamID is on the community ban list used on this server. Contact the server owner for more information.",
         URL = url,
