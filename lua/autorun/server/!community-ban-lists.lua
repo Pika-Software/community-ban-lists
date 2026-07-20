@@ -208,7 +208,7 @@ function CBanList:parse( data )
         end
     end
 
-    log_message( "info", "Fetched %d banned users from '%s', took %0.3f seconds.", self.Length, self.Name, CurTime() - self.InitTime )
+    log_message( "info", "Fetched %d banned users from '%s', took %0.3f seconds.", self.Length, self.Name, SysTime() - self.InitTime )
     self:apply()
 end
 
